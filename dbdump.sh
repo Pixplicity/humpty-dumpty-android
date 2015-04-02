@@ -11,11 +11,11 @@ function notice {
 }
 
 function success {
-    echo -e "\e[1;32m$1\e[0m"
+    echo -e "\033[1;32m$1\033[0m"
 }
 
 function error {
-    echo -e "\e[1;31m$1\e[0m"
+    echo -e "\033[1;31m$1\033[0m"
 }
 
 function fatal {
@@ -34,7 +34,7 @@ function dump_db {
     adb shell run-as $pkg chmod 777 /data/data/$pkg/databases/$filename 1>/dev/null
     adb shell run-as $pkg ls /data/data/$pkg/databases/$filename | grep "No such file" 2>/dev/null
     if [ $? != 0 ]; then
-    	mkdir dbdumps/$pkg 2>/dev/null
+        mkdir dbdumps/$pkg 2>/dev/null
         adb pull /data/data/$pkg/databases/$filename dbdumps/$pkg/$filename 2>/dev/null
         if [ $? == 0 ]; then
             success "Success!"
@@ -54,7 +54,7 @@ function dump_db {
 }
 
 function list_files {
-	pkg=$1
+    pkg=$1
     echo "Listing of /data/data/$pkg/databases/:"
     adb shell run-as $pkg chmod 777 /data/data/$pkg/databases/
     adb shell run-as $pkg ls /data/data/$pkg/databases/
@@ -94,19 +94,18 @@ while test $# -gt 0; do
 done
 
 if [ ${#sel_list_apps[@]} -ne 0 ]; then
-	if $list_files; then
-		for sel in ${sel_list_apps[@]}; do
-			list_files $sel
-		done
-	fi
+    if $list_files; then
+        for sel in ${sel_list_apps[@]}; do
+            list_files $sel
+        done
+    fi
 fi
 
 if [ ${#sel_dump_apps[@]} -ne 0 ]; then
-	mkdir dbdumps 2>/dev/null
-	for i in "${!sel_dump_files[@]}"; do
-	    pkg=${sel_dump_apps[$i]}
-	    file=${sel_dump_files[$i]}
-		dump_db $pkg $file
-	done
+    mkdir dbdumps 2>/dev/null
+    for i in "${!sel_dump_files[@]}"; do
+        pkg=${sel_dump_apps[$i]}
+        file=${sel_dump_files[$i]}
+        dump_db $pkg $file
+    done
 fi
-
