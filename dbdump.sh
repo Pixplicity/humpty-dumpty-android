@@ -24,8 +24,7 @@ function fatal {
     exit
 }
 
-notice "dbdump v1.1.1"
-echo ""
+notice "dbdump v1.1.2"
 
 function dump_db {
     pkg=$1
@@ -70,16 +69,14 @@ function list_files {
 # Stop on any errors
 #set -e
 
+show_help=false
 sel_list_apps=()
 sel_dump_apps=()
 sel_dump_files=()
 while test $# -gt 0; do
     case "$1" in
         --help|-h|-\?)
-            echo "Usage:"
-            echo "dbdump.sh [--list-files <package-name>] [--dump <package-name> <db-file>] [...]"
-            echo ""
-            exit
+			show_help=true
             ;;
         --list-files|-l)
             shift
@@ -98,6 +95,16 @@ while test $# -gt 0; do
     esac
     shift
 done
+
+if [ ${#sel_list_apps[@]} -eq 0 ] && [ ${#sel_dump_apps[@]} -eq 0 ]; then
+	show_help=true
+fi
+if [ $show_help ]; then
+    echo "Usage: dbdump.sh [--list-files <package-name>] [--dump <package-name> <db-file>] [...]"
+	exit
+fi
+
+echo ""
 
 if [ ${#sel_list_apps[@]} -ne 0 ]; then
     if $list_files; then
