@@ -36,14 +36,14 @@ function dump_db {
     # check if the file exists
     adb shell run-as $pkg ls /data/data/$pkg/databases/$filename | grep "No such file" 2>/dev/null
     if [ $? != 0 ]; then
-    	# prepare a directory
+        # prepare a directory
         mkdir dbdumps/$pkg 2>/dev/null
         # attempt to pull the file
         adb pull /data/data/$pkg/databases/$filename dbdumps/$pkg/$filename 2>/dev/null
         if [ $? == 0 ]; then
             success "Success!"
         else
-        	# couldn't pull the file; stream its contents instead, removing any end-of-line character returns
+            # couldn't pull the file; stream its contents instead, removing any end-of-line character returns
             adb shell run-as $pkg cat /data/data/$pkg/databases/$filename | sed 's/\r$//' > dbdumps/$pkg/$filename
             if [ $? == 0 ]; then
                 success "Success!"
@@ -58,8 +58,8 @@ function dump_db {
     # restore permission on file
     adb shell run-as $pkg chmod $mode /data/data/$pkg/databases/$filename 1>/dev/null
     if [ $? != 0 ]; then
-    	error "Could not restore file mode $mode on /data/data/$pkg/databases/$filename"
-	fi
+        error "Could not restore file mode $mode on /data/data/$pkg/databases/$filename"
+    fi
     echo ""
 }
 
@@ -80,7 +80,7 @@ sel_dump_files=()
 while test $# -gt 0; do
     case "$1" in
         --help|-h|-\?)
-			show_help=true
+            show_help=true
             ;;
         --list-files|-l)
             shift
@@ -101,11 +101,11 @@ while test $# -gt 0; do
 done
 
 if [ ${#sel_list_apps[@]} -eq 0 ] && [ ${#sel_dump_apps[@]} -eq 0 ]; then
-	show_help=true
+    show_help=true
 fi
 if [ $show_help = true ]; then
     echo "Usage: dbdump.sh [--list-files <package-name>] [--dump <package-name> <db-file>] [...]"
-	exit
+    exit
 fi
 
 echo ""
