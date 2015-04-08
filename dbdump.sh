@@ -99,7 +99,7 @@ done
 if [ ${#sel_list_apps[@]} -eq 0 ] && [ ${#sel_dump_apps[@]} -eq 0 ]; then
 	show_help=true
 fi
-if [ $show_help ]; then
+if [ $show_help = true ]; then
     echo "Usage: dbdump.sh [--list-files <package-name>] [--dump <package-name> <db-file>] [...]"
 	exit
 fi
