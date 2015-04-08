@@ -30,6 +30,7 @@ function dump_db {
     pkg=$1
     filename=$2
     notice "Dumping $pkg/$filename to dbdumps/$pkg/$filename..."
+    mode="$(adb shell run-as $pkg ls -al /data/data/$pkg/databases/$filename | awk '{k=0;for(i=0;i<=8;i++)k+=((substr($1,i+2,1)~/[rwx]/)*2^(8-i));if(k)printf("%0o ",k)}')"
     # make the file world-readable
     adb shell run-as $pkg chmod 777 /data/data/$pkg/databases/$filename 1>/dev/null
     # check if the file exists
@@ -55,7 +56,10 @@ function dump_db {
         list_files
     fi
     # restore permission on file
-    adb shell run-as $pkg chmod 600 /data/data/$pkg/databases/$filename 1>/dev/null
+    adb shell run-as $pkg chmod $mode /data/data/$pkg/databases/$filename 1>/dev/null
+    if [ $? != 0 ]; then
+    	error "Could not restore file mode $mode on /data/data/$pkg/databases/$filename"
+	fi
     echo ""
 }
 
