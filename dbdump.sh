@@ -31,14 +31,19 @@ function dump_db {
     pkg=$1
     filename=$2
     notice "Dumping $pkg/$filename to dbdumps/$pkg/$filename..."
+    # make the file world-readable
     adb shell run-as $pkg chmod 777 /data/data/$pkg/databases/$filename 1>/dev/null
+    # check if the file exists
     adb shell run-as $pkg ls /data/data/$pkg/databases/$filename | grep "No such file" 2>/dev/null
     if [ $? != 0 ]; then
+    	# prepare a directory
         mkdir dbdumps/$pkg 2>/dev/null
+        # attempt to pull the file
         adb pull /data/data/$pkg/databases/$filename dbdumps/$pkg/$filename 2>/dev/null
         if [ $? == 0 ]; then
             success "Success!"
         else
+        	# couldn't pull the file; stream its contents instead, removing any end-of-line character returns
             adb shell run-as $pkg cat /data/data/$pkg/databases/$filename | sed 's/\r$//' > dbdumps/$pkg/$filename
             if [ $? == 0 ]; then
                 success "Success!"
@@ -50,13 +55,14 @@ function dump_db {
         error "Failed; not installed?"
         list_files
     fi
+    # restore permission on file
+    adb shell run-as $pkg chmod 600 /data/data/$pkg/databases/$filename 1>/dev/null
     echo ""
 }
 
 function list_files {
     pkg=$1
     echo "Listing of /data/data/$pkg/databases/:"
-    adb shell run-as $pkg chmod 777 /data/data/$pkg/databases/
     adb shell run-as $pkg ls /data/data/$pkg/databases/
     echo ""
 }
