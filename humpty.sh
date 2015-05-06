@@ -24,20 +24,25 @@ function fatal {
 }
 
 notice "`basename $0` v1.2.0"
-echo ""
 
 function dump_db {
     pkg=$1
     filename=$2
     notice "Dumping $pkg/$filename to dumps/$pkg/$filename..."
+    mode="$(adb shell run-as $pkg ls -al /data/data/$pkg/$filename | awk '{k=0;for(i=0;i<=8;i++)k+=((substr($1,i+2,1)~/[rwx]/)*2^(8-i));if(k)printf("%0o ",k)}')"
+    # make the file world-readable
     adb shell run-as $pkg chmod 777 /data/data/$pkg/$filename 1>/dev/null
+    # check if the file exists
     adb shell run-as $pkg ls /data/data/$pkg/$filename | grep "No such file" 2>/dev/null
     if [ $? != 0 ]; then
+        # prepare a directory
         mkdir -p dumps/$pkg 2>/dev/null
+        # attempt to pull the file
         adb pull /data/data/$pkg/$filename dumps/$pkg/$filename 2>/dev/null
         if [ $? == 0 ]; then
             success "Success!"
         else
+            # couldn't pull the file; stream its contents instead, removing any end-of-line character returns
             adb shell run-as $pkg cat /data/data/$pkg/$filename | sed 's/\r$//' > dumps/$pkg/$filename
             if [ $? == 0 ]; then
                 success "Success!"
@@ -49,13 +54,17 @@ function dump_db {
         error "Failed; not installed?"
         list_files
     fi
+    # restore permission on file
+    adb shell run-as $pkg chmod $mode /data/data/$pkg/$filename 1>/dev/null
+    if [ $? != 0 ]; then
+        error "Could not restore file mode $mode on /data/data/$pkg/$filename"
+    fi
     echo ""
 }
 
 function list_files {
     pkg=$1
     echo "Listing of /data/data/$pkg/:"
-    #adb shell run-as $pkg chmod 777 /data/data/$pkg
     adb shell run-as $pkg ls -R /data/data/$pkg | sed 's/^/    /'
     echo ""
 }
@@ -63,13 +72,14 @@ function list_files {
 # Stop on any errors
 #set -e
 
+show_help=false
 sel_list_apps=()
 sel_dump_apps=()
 sel_dump_files=()
 while test $# -gt 0; do
     case "$1" in
         --help|-h|-\?)
-            break
+            show_help=true
             ;;
         --list-files|-l)
             shift
@@ -89,10 +99,22 @@ while test $# -gt 0; do
     shift
 done
 
-args=0
+if [ ${#sel_list_apps[@]} -eq 0 ] && [ ${#sel_dump_apps[@]} -eq 0 ]; then
+    show_help=true
+fi
+if [ $show_help = true ]; then
+    echo "Usage: `basename $0` [OPTION] HOST"
+    echo "Where OPTION is any of:"
+    echo "    -l, --list-files <package-name>"
+    echo "        list all files inside the data directory of <package-name>"
+    echo "    -d, --dump <package-name> <file>"
+    echo "        dump <file> from inside data directory of <package-name>"
+    exit 1
+fi
+
+echo ""
 
 if [ ${#sel_list_apps[@]} -ne 0 ]; then
-    args=$(($args+1))
     if $list_files; then
         for sel in ${sel_list_apps[@]}; do
             list_files $sel
@@ -101,21 +123,10 @@ if [ ${#sel_list_apps[@]} -ne 0 ]; then
 fi
 
 if [ ${#sel_dump_apps[@]} -ne 0 ]; then
-    args=$(($args+1))
     mkdir dumps 2>/dev/null
     for i in "${!sel_dump_files[@]}"; do
         pkg=${sel_dump_apps[$i]}
         file=${sel_dump_files[$i]}
         dump_db $pkg $file
     done
-fi
-
-if [ $args -eq 0 ]; then
-    echo "Usage: `basename $0` [OPTION] HOST"
-    echo "Where OPTION is any of:"
-    echo "    -l, --list-files <package-name>"
-    echo "        list all files inside the data directory of <package-name>"
-    echo "    -d, --dump <package-name> <file>"
-    echo "        dump <file> from inside data directory of <package-name>"
-    exit 1
 fi
