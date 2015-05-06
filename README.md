@@ -1,26 +1,35 @@
-# dbdump
+# Humpty Dumpty - A file dumper for Android
 
-A simple database dump utility for Android.
+A simple file dump utility for Android.
 
-Note that this currently only works for debuggable applications.
+Note that this only works for debuggable applications.
 
 Usage:
 
-    dbdump.sh [--list-files <package-name>] [--dump <package-name> <db-file>] [...]
+    humpty.sh [--list-files <package-name>] [--dump <package-name> <db-file>] [...]
 
-For example, to query all database files of an application:
+For example, to query all files of an application:
 
     $ dbdump.sh -l com.pixplicity.example
     
-    Listing of /data/data/com.pixplicity.example/databases/:
-    example.db
-    example.db-journal
-
-To dump that database:
-
-    $ dbdump.sh -d com.pixplicity.example example.db
+    Listing of /data/data/com.pixplicity.example/:
     
-    Dumping com.pixplicity.example/example.db...
+        /data/data/com.pixplicity.example:
+        cache
+        databases
+        
+        /data/data/com.pixplicity.example/cache:
+        com.android.opengl.shaders_cache
+        
+        /data/data/com.pixplicity.example/databases:
+        example.db
+        example.db-journal
+
+To dump the database `example.db`:
+
+    $ dbdump.sh -d com.pixplicity.example databases/example.db
+    
+    Dumping com.pixplicity.example/databases/example.db to dumps/com.pixplicity.example/databases/example.db...
     Success!
 
-All database dumps are located in the subdirectory `dbdumps`.
+All database dumps are located in the subdirectory `dumps`.
