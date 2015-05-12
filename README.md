@@ -10,7 +10,7 @@ Usage:
 
 For example, to query all files of an application:
 
-    $ dbdump.sh -l com.pixplicity.example
+    $ humpty.sh -l com.pixplicity.example
     
     Listing of /data/data/com.pixplicity.example/:
     
@@ -27,7 +27,7 @@ For example, to query all files of an application:
 
 To dump the database `example.db`:
 
-    $ dbdump.sh -d com.pixplicity.example databases/example.db
+    $ humpty.sh -d com.pixplicity.example databases/example.db
     
     Dumping com.pixplicity.example/databases/example.db to dumps/com.pixplicity.example/databases/example.db...
     Success!
