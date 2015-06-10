@@ -28,17 +28,20 @@ notice "`basename $0` v1.2.0"
 function dump_db {
     pkg=$1
     filename=$2
+    dbfile="${filename##*/}"
     notice "Dumping $pkg/$filename to dumps/$pkg/$filename..."
     mode="$(adb shell run-as $pkg ls -al /data/data/$pkg/$filename | awk '{k=0;for(i=0;i<=8;i++)k+=((substr($1,i+2,1)~/[rwx]/)*2^(8-i));if(k)printf("%0o ",k)}')"
     # make the file world-readable
-    adb shell run-as $pkg chmod 777 /data/data/$pkg/$filename 1>/dev/null
+    adb shell run-as $pkg chmod 666 /data/data/$pkg/$filename 1>/dev/null
     # check if the file exists
     adb shell run-as $pkg ls /data/data/$pkg/$filename | grep "No such file" 2>/dev/null
     if [ $? != 0 ]; then
-        # prepare a directory
+        # prepare directories
         mkdir -p dumps/$pkg 2>/dev/null
+        adb shell mkdir -p /sdcard/humpty
         # attempt to pull the file
-        adb pull /data/data/$pkg/$filename dumps/$pkg/$filename 2>/dev/null
+        adb shell cp /data/data/$pkg/$filename /sdcard/humpty/$dbfile
+        adb pull /sdcard/humpty/$dbfile dumps/$pkg/$filename 2>/dev/null
         if [ $? == 0 ]; then
             success "Success!"
         else
@@ -59,6 +62,8 @@ function dump_db {
     if [ $? != 0 ]; then
         error "Could not restore file mode $mode on /data/data/$pkg/$filename"
     fi
+    echo "Cleaning up..."
+    adb shell rm -r /sdcard/humpty
     echo ""
 }
 
