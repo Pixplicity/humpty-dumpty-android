@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# fix for OS X:
+export LC_CTYPE=C 
+export LANG=C
+
 #####
 # Note about extracting files using `cat`:
 # On some devices (e.g. Moto X 2014) this outputs newline characters. We remove these using `sed`.
@@ -43,7 +47,7 @@ function dump_db {
             success "Success!"
         else
             # couldn't pull the file; stream its contents instead, removing any end-of-line character returns
-            adb shell run-as $pkg cat /data/data/$pkg/$filename | sed $'s/\r$//' > dumps/$pkg/$filename
+            adb shell run-as $pkg cat /data/data/$pkg/$filename | sed 's/\r$//' > dumps/$pkg/$filename
             if [ $? == 0 ]; then
                 success "Success!"
             else
