@@ -87,6 +87,12 @@ function list_files {
     pkg=$1
     echo "Listing of /data/data/$pkg/:"
     adb shell run-as $pkg ls -R /data/data/$pkg | sed 's/^/    /'
+    ret=$?
+    if [ $ret == 255 ]; then
+        fatal "Failed; no device, or multiple devices attached to adb"
+    elif [ $ret != 0 ]; then
+        fatal "Failed; adb not found?"
+    fi
     echo ""
 }
 
