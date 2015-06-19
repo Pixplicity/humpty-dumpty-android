@@ -32,6 +32,7 @@ notice "`basename $0` v1.2.0"
 function dump_db {
     pkg=$1
     filename=$2
+    dbfile="${filename##*/}"
     notice "Dumping $pkg/$filename to dumps/$pkg/$filename..."
     mode="$(adb shell run-as $pkg ls -al /data/data/$pkg/$filename | awk '{k=0;for(i=0;i<=8;i++)k+=((substr($1,i+2,1)~/[rwx]/)*2^(8-i));if(k)printf("%0o ",k)}')"
     # make the file world-readable
@@ -51,7 +52,17 @@ function dump_db {
             if [ $? == 0 ]; then
                 success "Success!"
             else
-                error "Failed; found database, but could not pull it"
+                # couldn't stream file contents; copy to /sdcard instead and pull from there
+                adb shell mkdir -p /sdcard/humpty
+                adb shell cp /data/data/$pkg/$filename /sdcard/humpty/$dbfile
+                adb pull /sdcard/humpty/$dbfile dumps/$pkg/$filename 2>/dev/null
+                if [ $? == 0 ]; then
+                    success "Success!"
+                else
+                    error "Failed; found database, but could not pull it"
+                fi
+                echo "Cleaning up..."
+                adb shell rm -r /sdcard/humpty
             fi
         fi
     else
