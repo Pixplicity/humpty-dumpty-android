@@ -37,6 +37,12 @@ function dump_db {
     mode="$(adb shell run-as $pkg ls -al /data/data/$pkg/$filename | awk '{k=0;for(i=0;i<=8;i++)k+=((substr($1,i+2,1)~/[rwx]/)*2^(8-i));if(k)printf("%0o ",k)}')"
     # make the file world-readable
     adb shell run-as $pkg chmod 777 /data/data/$pkg/$filename 1>/dev/null
+    ret=$?
+    if [ $ret == 255 ]; then
+        fatal "Failed; no device, or multiple devices attached to adb"
+    elif [ $ret != 0 ]; then
+        fatal "Failed; adb not found?"
+    fi
     # check if the file exists
     adb shell run-as $pkg ls /data/data/$pkg/$filename | grep "No such file" 2>/dev/null
     if [ $? != 0 ]; then
