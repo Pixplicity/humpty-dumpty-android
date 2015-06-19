@@ -36,7 +36,7 @@ function dump_db {
     adb shell run-as $pkg ls /data/data/$pkg/$filename | grep "No such file" 2>/dev/null
     if [ $? != 0 ]; then
         # prepare a directory
-        mkdir -p dumps/$pkg 2>/dev/null
+        mkdir -p `dirname dumps/$pkg/$filename` 2>/dev/null
         # attempt to pull the file
         adb pull /data/data/$pkg/$filename dumps/$pkg/$filename 2>/dev/null
         if [ $? == 0 ]; then
