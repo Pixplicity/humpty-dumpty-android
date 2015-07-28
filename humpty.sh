@@ -54,7 +54,12 @@ function dump_db {
             success "Success!"
         else
             # couldn't pull the file; stream its contents instead, removing any end-of-line character returns
-            adb shell run-as $pkg cat /data/data/$pkg/$filename | sed 's/\r$//' > dumps/$pkg/$filename
+            if [ $(uname) == 'Darwin' ]; then
+                adb shell run-as $pkg cat /data/data/$pkg/$filename > dumps/$pkg/$filename
+                perl -pi -e 's/\r\n/\n/g' dumps/$pkg/$filename
+            else
+                adb shell run-as $pkg cat /data/data/$pkg/$filename | sed 's/\r$//' > dumps/$pkg/$filename
+            fi
             if [ $? == 0 ]; then
                 success "Success!"
             else
