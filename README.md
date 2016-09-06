@@ -33,3 +33,7 @@ To dump the database `example.db`:
     Success!
 
 All database dumps are located in the subdirectory `dumps`.
+
+## License
+
+Licensed under the Apache license.
