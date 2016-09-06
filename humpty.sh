@@ -1,5 +1,7 @@
 #!/bin/bash
 
+BASEDIR=$(dirname $0)
+
 # fix for OS X:
 export LC_CTYPE=C 
 export LANG=C
@@ -33,7 +35,7 @@ function dump_db {
     pkg=$1
     filename=$2
     dbfile="${filename##*/}"
-    notice "Dumping $pkg/$filename to dumps/$pkg/$filename..."
+    notice "Dumping $pkg/$filename to $BASEDIR/dumps/$pkg/$filename..."
     mode="$(adb shell run-as $pkg ls -al /data/data/$pkg/$filename | awk '{k=0;for(i=0;i<=8;i++)k+=((substr($1,i+2,1)~/[rwx]/)*2^(8-i));if(k)printf("%0o ",k)}')"
     # make the file world-readable
     adb shell run-as $pkg chmod 777 /data/data/$pkg/$filename 1>/dev/null
@@ -47,21 +49,21 @@ function dump_db {
     adb shell run-as $pkg ls /data/data/$pkg/$filename | grep "No such file" 2>/dev/null
     if [ $? != 0 ]; then
         # prepare a directory
-        mkdir -p `dirname dumps/$pkg/$filename` 2>/dev/null
+        mkdir -p `dirname $BASEDIR/dumps/$pkg/$filename` 2>/dev/null
         # attempt to pull the file
-        adb pull /data/data/$pkg/$filename dumps/$pkg/$filename 2>/dev/null
+        adb pull /data/data/$pkg/$filename $BASEDIR/dumps/$pkg/$filename 2>/dev/null
         if [ $? == 0 ]; then
             success "Success!"
         else
             # couldn't pull the file; stream its contents instead, removing any end-of-line character returns
-            adb shell run-as $pkg cat /data/data/$pkg/$filename | sed 's/\r$//' > dumps/$pkg/$filename
+            adb shell run-as $pkg cat /data/data/$pkg/$filename | sed 's/\r$//' > $BASEDIR/dumps/$pkg/$filename
             if [ $? == 0 ]; then
                 success "Success!"
             else
                 # couldn't stream file contents; copy to /sdcard instead and pull from there
                 adb shell mkdir -p /sdcard/humpty
                 adb shell cp /data/data/$pkg/$filename /sdcard/humpty/$dbfile
-                adb pull /sdcard/humpty/$dbfile dumps/$pkg/$filename 2>/dev/null
+                adb pull /sdcard/humpty/$dbfile $BASEDIR/dumps/$pkg/$filename 2>/dev/null
                 if [ $? == 0 ]; then
                     success "Success!"
                 else
@@ -150,7 +152,7 @@ if [ ${#sel_list_apps[@]} -ne 0 ]; then
 fi
 
 if [ ${#sel_dump_apps[@]} -ne 0 ]; then
-    mkdir dumps 2>/dev/null
+    mkdir $BASEDIR/dumps 2>/dev/null
     for i in "${!sel_dump_files[@]}"; do
         pkg=${sel_dump_apps[$i]}
         file=${sel_dump_files[$i]}
