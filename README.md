@@ -6,7 +6,7 @@ Note that this only works for debuggable applications.
 
 Usage:
 
-    humpty.sh [--list-files <package-name>] [--dump <package-name> <db-file>] [...]
+    humpty.sh [--list-files <package-name>] [--dump <package-name> <db-file>] [--all <package-name>] [...]
 
 For example, to query all files of an application:
 
@@ -31,6 +31,15 @@ To dump the database `example.db`:
     
     Dumping com.pixplicity.example/databases/example.db to dumps/com.pixplicity.example/databases/example.db...
     Success!
+
+To dump all the files of an application:
+
+    $ humpty.sh -a com.pixplicity.example
+    
+    Dumping com.pixplicity.example/databases/example.db to dumps/com.pixplicity.example/databases/example.db...
+    Success!
+    ...
+    ...
 
 All database dumps are located in the subdirectory `dumps`.
 
