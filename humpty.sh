@@ -103,6 +103,17 @@ function list_files {
     echo ""
 }
 
+function get_files {
+    pkg=$1
+    adb shell run-as $pkg find /data/data/$pkg -type f
+    ret=$?
+    if [ $ret == 255 ]; then
+        fatal "Failed; no device, or multiple devices attached to adb"
+    elif [ $ret != 0 ]; then
+        fatal "Failed; adb not found?"
+    fi
+}
+
 # Stop on any errors
 #set -e
 
@@ -129,6 +140,10 @@ while test $# -gt 0; do
                 sel_dump_files+=("$1")
             fi
             ;;
+        --all|-a)
+            shift
+            sel_dump_apps+=("$1")
+            ;;
     esac
     shift
 done
@@ -143,6 +158,8 @@ if [ $show_help = true ]; then
     echo "        list all files inside the data directory of <package-name>"
     echo "    -d, --dump <package-name> <file>"
     echo "        dump <file> from inside data directory of <package-name>"
+    echo "    -a, --all <package-name>"
+    echo "        dump all files from inside data directory of <package-name>"
     exit 1
 fi
 
@@ -157,10 +174,21 @@ if [ ${#sel_list_apps[@]} -ne 0 ]; then
 fi
 
 if [ ${#sel_dump_apps[@]} -ne 0 ]; then
-    mkdir $BASEDIR/dumps 2>/dev/null
-    for i in "${!sel_dump_files[@]}"; do
-        pkg=${sel_dump_apps[$i]}
-        file=${sel_dump_files[$i]}
-        dump_db $pkg $file
-    done
+
+    if [ ${#sel_dump_files[@]} -ne 0 ]; then
+        mkdir $BASEDIR/dumps 2>/dev/null
+        for i in "${!sel_dump_files[@]}"; do
+            pkg=${sel_dump_apps[$i]}
+            file=${sel_dump_files[$i]}
+            dump_db $pkg $file
+        done
+    else 
+        mkdir $BASEDIR/dumps 2>/dev/null
+        for file in $(get_files $sel_dump_apps); do
+            pkg=$sel_dump_apps
+            filename=$( echo $file | sed "s/\/data\/data\/$pkg\///")
+            echo "$filename"
+            dump_db $pkg $filename
+         done
+    fi
 fi
