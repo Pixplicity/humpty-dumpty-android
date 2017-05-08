@@ -187,7 +187,6 @@ if [ ${#sel_dump_apps[@]} -ne 0 ]; then
         for file in $(get_files $sel_dump_apps); do
             pkg=$sel_dump_apps
             filename=$( echo $file | sed "s/\/data\/data\/$pkg\///")
-            echo "$filename"
             dump_db $pkg $filename
          done
     fi
