@@ -36,7 +36,8 @@ function dump_db {
     filename=$2
     dbfile="${filename##*/}"
     notice "Dumping $pkg/$filename to $BASEDIR/dumps/$pkg/$filename..."
-    mode="$(adb shell \"run-as $pkg ls -al /data/data/$pkg/$filename\" | awk '{k=0;for(i=0;i<=8;i++)k+=((substr($1,i+2,1)~/[rwx]/)*2^(8-i));if(k)printf("%0o ",k)}')"
+
+    mode="$(adb shell run-as $pkg ls -al /data/data/$pkg/$filename | awk '{k=0;for(i=0;i<=8;i++)k+=((substr($1,i+2,1)~/[rwx]/)*2^(8-i));if(k)printf("%0o ",k)}')"
     # make the file world-readable
     adb shell "run-as $pkg chmod 777 /data/data/$pkg/$filename" 1>/dev/null
     ret=$?
